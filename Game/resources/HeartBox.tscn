@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=1]
+
+[ext_resource path="res://resources/HeartBox.gd" type="Script" id=1]
+
+[node name="HeartBox" type="Node2D"]
+
+script/script = ExtResource( 1 )
+max_hearts = 3
+
+
