@@ -19,6 +19,8 @@ onready var puncher = get_node('Puncher')
 
 var on_floor = false
 var on_ladder = false
+var in_portal = false
+var portal = null
 var in_liquid = false
 var is_hit = false
 
@@ -28,16 +30,12 @@ var jumping = false
 var stopping_jump = false
 var dead = false
 
-var states = {
-	'onFloor':	false,
-	'onLadder':	false,
-	'inDoorway':false,
-	'inLiquid':	false,
-	'inPain':	false,
-	'jumping':	false,
-	'endJump':	false,
-	'dead':		false,
-	}
+var can_jump = true
+var can_punch = true
+var can_portal = true
+
+var pending_warp = null
+
 
 var air_time = 0.0
 var floor_h_vel = 0.0
@@ -62,7 +60,7 @@ func start_punch():
 func punch():
 	var hop = PUNCH_HOP
 	if in_liquid:	hop*=0.25
-	var V = Vector2(hop*facing, -hop)
+	var V = Vector2(hop*facing, -hop/2)
 	set_linear_velocity(V)
 	striking = true
 	
@@ -106,13 +104,23 @@ func _integrate_forces(state):
 	var new_anim = anim
 	var new_facing = facing
 	
+	# Process warping
+	if pending_warp != null:
+		print(pending_warp)
+		state.set_transform(Matrix32(0, pending_warp))
+		print(get_global_pos())
+		pending_warp = null
+	
 	# Get Input
 	var LEFT = Input.is_action_pressed('run_left')
 	var RIGHT = Input.is_action_pressed('run_right')
 	var UP = Input.is_action_pressed('climb_up')
+	if not UP:		can_portal = true
 	var DOWN = Input.is_action_pressed('climb_down')
 	var JUMP = Input.is_action_pressed('jump')
+	if not JUMP:	can_jump = true
 	var PUNCH = Input.is_action_pressed('punch')
+	if not PUNCH:	can_punch = true
 	
 	# Deapply floor velocity
 	lv.x -= floor_h_vel
@@ -146,11 +154,17 @@ func _integrate_forces(state):
 			if stopping_jump:
 				lv.y += STOP_JUMP_FORCE*delta
 			# Apply Punch input
-			if not punching and PUNCH:
+			if not punching and PUNCH and can_punch:
 				new_anim = 'punch'
 		
 		# On-Floor mechanics
 		if on_floor and not punching:
+			if in_portal and portal and can_portal:
+				if UP and not DOWN:
+					portal.warp()
+					in_portal = false
+					portal = null
+					can_portal = false
 			# Apply left input
 			if LEFT and not RIGHT:
 				if lv.x > -max_spd:
@@ -168,10 +182,12 @@ func _integrate_forces(state):
 				lv.x = sign(lv.x)*xv
 		
 			# Apply Jump input
-			if not jumping and JUMP:
+			if not jumping and JUMP and can_jump:
+				#print(get_global_pos())
 				lv.y -= jump_pow
 				jumping = true
 				stopping_jump = false
+				can_jump = false
 				
 			if lv.x < 0 and LEFT:
 				new_facing = -1
@@ -183,8 +199,10 @@ func _integrate_forces(state):
 				new_anim = 'jump'
 			elif abs(lv.x) < 0.1:
 				new_anim = 'idle'
-			else:
+			elif LEFT or RIGHT:
 				new_anim = 'run'
+			else:
+				new_anim = 'idle'
 			
 			# Hop on ladder if on floor and pressing UP
 			if on_ladder:
@@ -192,8 +210,9 @@ func _integrate_forces(state):
 					lv.y -= 1
 			
 			# Apply Punch input
-			if PUNCH:
+			if PUNCH and can_punch:
 				new_anim = 'punch'
+				can_punch = false
 		
 		# on ladder and not on floor
 		elif on_ladder and not punching:
@@ -240,8 +259,9 @@ func _integrate_forces(state):
 					lv.x = sign(lv.x)*xv
 				new_anim = 'jump'
 			# Apply Punch input
-			if PUNCH:
+			if PUNCH and can_punch:
 				new_anim = 'punch'
+				can_punch = false
 	
 	else:
 		new_anim = 'die'
@@ -265,7 +285,7 @@ func _integrate_forces(state):
 	# Apply gravity and velocity
 	if not on_ladder:
 		var g = state.get_total_gravity()
-		if punching:	g*=0.75
+		if punching:	g.y*=0.75
 		if in_liquid:	g.y*=0.1
 		lv += g*delta
 	state.set_linear_velocity(lv)
@@ -306,7 +326,10 @@ func _on_Detector_area_enter( area ):
 	# Process Pick-Up items
 	if area.has_method('pickup'):
 		area.pickup()
-
+	
+	elif area.has_method('warp'):
+		in_portal = true
+		portal = area
 
 func _on_Detector_area_exit( area ):
 	# Process exit ladders
@@ -317,3 +340,7 @@ func _on_Detector_area_exit( area ):
 
 	if area.get_name().begins_with('Slime'):
 		if in_liquid:	in_liquid = false
+
+	if area.has_method('warp'):
+		in_portal = false
+		portal = null

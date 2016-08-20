@@ -20,6 +20,7 @@ func _enter_tree():
 	shape.set_polygon(square)
 	set_z(-1)
 
-func _warp():
+func warp():
 	prints(destination_map, destination_portal)
+	get_node('/root/World').warp(destination_map, destination_portal)
 

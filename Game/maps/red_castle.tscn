@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=1]
+
+[ext_resource path="res://tilesets/base.tres" type="TileSet" id=1]
+[ext_resource path="res://addons/game_nodes/game_portal.gd" type="Script" id=2]
+[ext_resource path="res://addons/game_nodes/game_portal_icon.png" type="Texture" id=3]
+
+[sub_resource type="ConvexPolygonShape2D" id=1]
+
+custom_solver_bias = 0.0
+points = Vector2Array( -8, -8, 8, -8, 8, 8, -8, 8 )
+
+[node name="TileMap" type="TileMap"]
+
+mode = 0
+tile_set = ExtResource( 1 )
+cell/size = Vector2( 16, 16 )
+cell/quadrant_size = 16
+cell/custom_transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+cell/half_offset = 2
+cell/tile_origin = 1
+cell/y_sort = false
+collision/use_kinematic = false
+collision/friction = 0.0
+collision/bounce = 0.0
+collision/layers = 1
+collision/mask = 1
+occluder/light_mask = 1
+tile_data = IntArray( -1, 16, -65536, 16, -65535, 16, -65534, 16, -65533, 16, -65532, 16, -65531, 16, -65530, 16, -65529, 16, -65528, 16, -65527, 16, -65526, 16, -65525, 16, -65524, 16, -65523, 16, -65522, 16, -65521, 16, -65520, 16, 65535, 16, 16, 16, 131071, 16, 65552, 16, 196607, 16, 131088, 16, 262143, 16, 196624, 16, 327679, 16, 262160, 16, 393215, 16, 327696, 16, 458751, 16, 393232, 16, 524287, 16, 458768, 16, 589823, 16, 524288, 17, 524289, 17, 524290, 17, 524291, 17, 524292, 17, 524293, 17, 524294, 17, 524295, 17, 524296, 17, 524297, 17, 524298, 17, 524299, 17, 524300, 17, 524301, 17, 524302, 17, 524303, 17, 524304, 16, 655359, 16, 589824, 16, 589825, 16, 589826, 16, 589827, 16, 589828, 16, 589829, 16, 589830, 16, 589831, 16, 589832, 16, 589833, 16, 589834, 16, 589835, 16, 589836, 16, 589837, 16, 589838, 16, 589839, 16, 589840, 16 )
+
+[node name="GAME_Portal" type="Area2D" parent="."]
+
+transform/pos = Vector2( 216, 120 )
+z/z = -1
+input/pickable = true
+shapes/0/shape = SubResource( 1 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/trigger = false
+gravity_vec = Vector2( 0, 1 )
+gravity = 98.0
+linear_damp = 0.1
+angular_damp = 1.0
+script/script = ExtResource( 2 )
+__meta__ = { "_editor_icon":ExtResource( 3 ) }
+destination_map = "brown_castle"
+destination_portal = "GAME_Portal"
+
+

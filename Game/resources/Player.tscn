@@ -129,6 +129,7 @@ height = 12.0
 
 [node name="Player" type="RigidBody2D"]
 
+process/pause_mode = 1
 input/pickable = false
 shapes/0/shape = SubResource( 1 )
 shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
@@ -186,6 +187,7 @@ autoplay = "idle"
 
 [node name="Camera" type="Camera2D" parent="."]
 
+offset = Vector2( 0, -16 )
 anchor_mode = 1
 rotating = false
 current = true
