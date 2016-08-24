@@ -8,10 +8,11 @@ func _enter_tree():
 	add_custom_type("GAME_Door", "RigidBody2D", load(path+'game_door.gd'), load(path+'game_door_icon.png'))
 	add_custom_type("GAME_Portal", "Area2D", load(path+'game_portal.gd'), load(path+'game_portal_icon.png'))
 	add_custom_type("GAME_Food", "Area2D", load(path+'game_food.gd'), load(path+'game_food_icon.png'))
-	
+	add_custom_type("GAME_Sign", "Area2D", load(path+'game_sign.gd'), load(path+'game_sign_icon.png'))
 func _exit_tree():
 	remove_custom_type("GAME_Key")
 	remove_custom_type("GAME_Door")
 	remove_custom_type("GAME_Portal")
 	remove_custom_type("GAME_Food")
+	remove_custom_type("GAME_Sign")
 

@@ -40,7 +40,7 @@ func _input(event):
 			restore_hit(1)
 
 func _on_Death():
-	print("DEATH")
+	get_node('../../').player.die()
 
 func _on_Full():
 	print("FULL")

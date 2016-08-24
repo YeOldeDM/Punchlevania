@@ -6,6 +6,7 @@ var MAX_FLOOR_AIRTIME = 0.15
 export var STOP_JUMP_FORCE = 190
 
 export var MAX_RUN_VELOCITY = 100
+export var max_climb_velocity = 50
 export var RUN_ACCEL = 400
 export var AIR_ACCEL = 110
 
@@ -19,10 +20,9 @@ onready var puncher = get_node('Puncher')
 
 var on_floor = false
 var on_ladder = false
-var in_portal = false
-var portal = null
 var in_liquid = false
-var is_hit = false
+var in_lava = false
+var in_pain = false
 
 var punching = false
 var striking = false
@@ -32,7 +32,9 @@ var dead = false
 
 var can_jump = true
 var can_punch = true
-var can_portal = true
+
+var can_use = true
+var use_object = null
 
 var pending_warp = null
 
@@ -45,8 +47,6 @@ var anim = 'idle' setget _set_anim
 var facing = 1 setget _set_facing
 
 func _ready():
-	# Called every time the node is added to the scene.
-	# Initialization here
 	pass
 
 
@@ -74,8 +74,13 @@ func die():
 
 # Called when we get punched
 func get_punched(punched_by, vector, damage):
-	print(get_name()+" got punched by "+punched_by.get_name()+" for "+str(damage)+" hits!")
-
+	if not in_pain:
+		vector = vector.normalized()*(damage*5)
+		print("I got hit by a "+punched_by.get_name()+" for "+str(damage)+" hits!")
+		set_linear_velocity(vector)
+		get_node('/root/World').hud.get_node('HeartBox').take_hit(damage)
+		in_pain = true
+		get_node('PainTimer').start()
 
 func _set_facing( value ):
 	facing = value
@@ -106,8 +111,9 @@ func _integrate_forces(state):
 	
 	# Process warping
 	if pending_warp != null:
-		print(pending_warp)
+		var c = get_node('Camera')
 		state.set_transform(Matrix32(0, pending_warp))
+		c.reset_smoothing()
 		print(get_global_pos())
 		pending_warp = null
 	
@@ -115,12 +121,12 @@ func _integrate_forces(state):
 	var LEFT = Input.is_action_pressed('run_left')
 	var RIGHT = Input.is_action_pressed('run_right')
 	var UP = Input.is_action_pressed('climb_up')
-	if not UP:		can_portal = true
+	if not UP and not can_use:		can_use = true
 	var DOWN = Input.is_action_pressed('climb_down')
 	var JUMP = Input.is_action_pressed('jump')
-	if not JUMP:	can_jump = true
+	if not JUMP and not can_jump:	can_jump = true
 	var PUNCH = Input.is_action_pressed('punch')
-	if not PUNCH:	can_punch = true
+	if not PUNCH and not can_punch:	can_punch = true
 	
 	# Deapply floor velocity
 	lv.x -= floor_h_vel
@@ -159,12 +165,14 @@ func _integrate_forces(state):
 		
 		# On-Floor mechanics
 		if on_floor and not punching:
-			if in_portal and portal and can_portal:
+			
+			# USE an object with UP
+			if use_object != null and can_use:
 				if UP and not DOWN:
-					portal.warp()
-					in_portal = false
-					portal = null
-					can_portal = false
+					if not use_object.has_node('SpeechFrame'):
+						use_object.use()
+						can_use = false
+
 			# Apply left input
 			if LEFT and not RIGHT:
 				if lv.x > -max_spd:
@@ -216,32 +224,34 @@ func _integrate_forces(state):
 		
 		# on ladder and not on floor
 		elif on_ladder and not punching:
+			jumping = false
+			stopping_jump = false
 			new_anim = 'climb'
 			if jumping:	jumping = false
 			if UP and not DOWN:
-				if lv.y > -max_spd:
+				if lv.y > -max_climb_velocity:
 					lv.y -= air_spd*delta
 			elif DOWN and not UP:
-				if lv.y < max_spd:
+				if lv.y < max_climb_velocity:
 					lv.y += air_spd*delta
 			else:
 				var yv = abs(lv.y)
-				yv -= air_spd*delta*10
+				yv -= air_spd*delta*100
 				if yv < 0:	yv = 0
 				lv.y = sign(lv.y)*yv
 				
 			if LEFT and not RIGHT:
-				if lv.x > -max_spd:
+				if lv.x > -max_climb_velocity:
 					lv.x -= air_spd*delta
 			elif RIGHT and not LEFT:
-				if lv.x < max_spd:
+				if lv.x < max_climb_velocity:
 					lv.x += air_spd*delta
 			else:
 				var xv = abs(lv.x)
-				xv -= air_spd*delta*10
+				xv -= air_spd*delta*100
 				if xv < 0:	xv = 0
 				lv.x = sign(lv.x)*xv
-	
+			lv.y = clamp(lv.y, -max_climb_velocity, max_climb_velocity)
 			
 		# Mid-air mechanics
 		else:
@@ -302,8 +312,14 @@ func _integrate_forces(state):
 			# Rebound from punching the wall
 			var V = -puncher.get_cast_to().normalized()
 			set_linear_velocity(V*50)
-
-
+	
+	if not in_pain:
+		if in_lava and not dead:
+			get_punched(self, Vector2(0,0), 4)
+	
+	if dead and PUNCH:
+		get_node('/root/World').respawn()
+	
 func _pop_to_floor(y):
 	var pos = get_pos()
 	pos.y = y - 8.0001
@@ -322,15 +338,20 @@ func _on_Detector_area_enter( area ):
 			#die()
 		if not in_liquid:
 			in_liquid = true
-		
+	if area.get_name().begins_with('Lava'):
+		if not in_liquid:
+			in_liquid = true
+		if not in_lava:
+			in_lava = true
+	
 	# Process Pick-Up items
 	if area.has_method('pickup'):
 		area.pickup()
-	
-	elif area.has_method('warp'):
-		in_portal = true
-		portal = area
 
+	
+	elif area.has_method('use'):
+		use_object = area
+	
 func _on_Detector_area_exit( area ):
 	# Process exit ladders
 	if area.get_name().begins_with('Ladders'):
@@ -340,7 +361,12 @@ func _on_Detector_area_exit( area ):
 
 	if area.get_name().begins_with('Slime'):
 		if in_liquid:	in_liquid = false
+	if area.get_name().begins_with('Lava'):
+		if in_liquid:	in_liquid = false
+		if in_lava:		in_lava = false
 
-	if area.has_method('warp'):
-		in_portal = false
-		portal = null
+	if area.has_method('use'):
+		if use_object:	use_object = null
+
+func _on_PainTimer_timeout():
+	in_pain = false

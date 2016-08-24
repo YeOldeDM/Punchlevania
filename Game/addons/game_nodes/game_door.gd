@@ -29,7 +29,8 @@ func _enter_tree():
 
 func unlock():
 	if lock_type in get_node('/root/GameState').Keys:
-		get_node('/root/GameState').remove_key(lock_type)
-		hide()
-		PS2D.body_clear_shapes(get_rid())
-		#print(GameState.Keys)
+		if get_node('/root/GameState').Keys[lock_type] > 0:
+			get_node('/root/GameState').remove_key(lock_type)
+			hide()
+			PS2D.body_clear_shapes(get_rid())
+			#print(GameState.Keys)

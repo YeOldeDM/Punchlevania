@@ -1,6 +1,8 @@
 
 extends Node
 
+const initial_map = 'brown_castle'
+
 onready var world = get_node('/root/World')
 onready var hud = world.get_node('HUD')
 
@@ -17,11 +19,12 @@ func add_key(type):
 		Keys[type] += 1
 	else:
 		Keys[type] = 1
+	print(Keys)
 
 func remove_key(type):
 	if type in Keys:
 		if Keys[type] > 0:
 			Keys[type] -= 1
-
+	print(Keys)
 
 
