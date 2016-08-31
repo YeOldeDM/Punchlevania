@@ -25,7 +25,7 @@ func _enter_tree():
 	add_child(shape)
 	
 	var sh = CircleShape2D.new()
-	sh.set_radius(8)
+	sh.set_radius(7)
 	shape.set_shape(sh)
 	
 	set('food',food)

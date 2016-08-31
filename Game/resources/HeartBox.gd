@@ -12,6 +12,9 @@ func take_hit(amount):
 func restore_hit(amount):
 	get_child(0).restore_hit(amount)
 
+func is_full():
+	return get_child(get_child_count()-1).is_full()
+
 func _ready():
 	var pos = get_pos()+Vector2(16,12)
 	for i in range(max_hearts):

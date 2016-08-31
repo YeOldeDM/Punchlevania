@@ -81,9 +81,9 @@ tracks/1/keys = { "times":FloatArray( 0 ), "transitions":FloatArray( 1 ), "updat
 
 [sub_resource type="Animation" id=7]
 
-length = 0.7
+length = 0.6
 loop = true
-step = 0.1
+step = 0.05
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:transform/pos")
 tracks/0/interp = 1
@@ -93,12 +93,12 @@ tracks/1/type = "value"
 tracks/1/path = NodePath("Sprite:frame")
 tracks/1/interp = 1
 tracks/1/imported = false
-tracks/1/keys = { "times":FloatArray( 0, 0.1, 0.4, 0.6 ), "transitions":FloatArray( 1, 1, 1, 1 ), "update":1, "values":[ 2, 3, 4, 2 ] }
+tracks/1/keys = { "times":FloatArray( 0, 0.1, 0.25, 0.5 ), "transitions":FloatArray( 1, 1, 1, 1 ), "update":1, "values":[ 2, 3, 4, 2 ] }
 tracks/2/type = "method"
 tracks/2/path = NodePath(".")
 tracks/2/interp = 1
 tracks/2/imported = false
-tracks/2/keys = { "times":FloatArray( 0, 0.4, 0.6 ), "transitions":FloatArray( 1, 1, 1 ), "values":[ { "args":[  ], "method":"start_punch" }, { "args":[  ], "method":"punch" }, { "args":[  ], "method":"end_punch" } ] }
+tracks/2/keys = { "times":FloatArray( 0, 0.25, 0.5 ), "transitions":FloatArray( 1, 1, 1 ), "values":[ { "args":[  ], "method":"start_punch" }, { "args":[  ], "method":"punch" }, { "args":[  ], "method":"end_punch" } ] }
 
 [sub_resource type="Animation" id=8]
 
@@ -132,11 +132,14 @@ height = 12.0
 process/pause_mode = 1
 input/pickable = false
 shapes/0/shape = SubResource( 1 )
-shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
+shapes/0/transform = Matrix32( 1, 0, 0, 1, -4, 0 )
 shapes/0/trigger = false
-shapes/1/shape = SubResource( 2 )
-shapes/1/transform = Matrix32( 1, 0, 0, 1, 0, -2 )
+shapes/1/shape = SubResource( 1 )
+shapes/1/transform = Matrix32( 1, 0, 0, 1, 4, 0 )
 shapes/1/trigger = false
+shapes/2/shape = SubResource( 2 )
+shapes/2/transform = Matrix32( 1, 0, 0, 1, 0, -2 )
+shapes/2/trigger = false
 collision/layers = 1
 collision/mask = 1
 mode = 2
@@ -160,16 +163,15 @@ MAX_RUN_VELOCITY = 100
 max_climb_velocity = 50
 RUN_ACCEL = 400
 AIR_ACCEL = 110
-JUMP_VELOCITY = 140
+JUMP_VELOCITY = 165
 PUNCH_HOP = 50
 PUNCH_DAMAGE = 1
 
 [node name="Sprite" type="Sprite" parent="."]
 
-transform/pos = Vector2( 0, -1 )
 texture = ExtResource( 2 )
 hframes = 6
-frame = 1
+frame = 4
 
 [node name="Animator" type="AnimationPlayer" parent="."]
 
@@ -209,19 +211,28 @@ drag_margin/bottom = 0.2
 
 [node name="CollisionFeet" type="CollisionShape2D" parent="."]
 
+transform/pos = Vector2( -4, 0 )
 shape = SubResource( 1 )
 trigger = false
 _update_shape_index = 0
+
+[node name="CollisionFeet1" type="CollisionShape2D" parent="."]
+
+transform/pos = Vector2( 4, 0 )
+shape = SubResource( 1 )
+trigger = false
+_update_shape_index = 1
 
 [node name="CollisionBody" type="CollisionShape2D" parent="."]
 
 transform/pos = Vector2( 0, -2 )
 shape = SubResource( 2 )
 trigger = false
-_update_shape_index = 1
+_update_shape_index = 2
 
 [node name="Detector" type="Area2D" parent="."]
 
+visibility/visible = false
 input/pickable = true
 shapes/0/shape = SubResource( 9 )
 shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
@@ -239,8 +250,9 @@ _update_shape_index = 0
 
 [node name="Puncher" type="RayCast2D" parent="."]
 
+visibility/visible = false
 enabled = true
-cast_to = Vector2( 8, 0 )
+cast_to = Vector2( 10, 0 )
 layer_mask = 1
 type_mask = 15
 

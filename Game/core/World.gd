@@ -61,13 +61,14 @@ func toggle_menu():
 	else:
 		in_menu = true
 		print('menu ON!')
-		hud.get_node('Menu').popup_centered()
+		hud.get_node('Menu').popup()
 	toggle_pause()
 
 func respawn():
 	var new_player = player_obj.instance()
 	player.queue_free()
 	add_child(new_player)
+	new_player.set_owner(self)
 	player = new_player
 	
 	warp(respawn_map, respawn_point)
@@ -96,7 +97,7 @@ func warp(destination, door='GAME_Door'):
 	
 	var new_door = map.find_node(door)
 	if new_door:
-		player.pending_warp = new_door.get_pos()
+		player.pending_warp = new_door.get_global_pos()
 	
 func actor_say( what, where ):
 	print(what)

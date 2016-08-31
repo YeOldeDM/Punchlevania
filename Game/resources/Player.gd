@@ -1,6 +1,8 @@
 
 extends RigidBody2D
 
+var powerball = preload('res://resources/bullets/PowerBall.tscn')
+
 var MAX_FLOOR_AIRTIME = 0.15
 
 export var STOP_JUMP_FORCE = 190
@@ -63,6 +65,8 @@ func punch():
 	var V = Vector2(hop*facing, -hop/2)
 	set_linear_velocity(V)
 	striking = true
+	if get_node('/root/World').hearts.is_full():
+		_shoot_powerball()
 	
 func end_punch():
 	punching = false
@@ -75,7 +79,7 @@ func die():
 # Called when we get punched
 func get_punched(punched_by, vector, damage):
 	if not in_pain:
-		vector = vector.normalized()*(damage*5)
+		vector = vector.normalized()*(damage*50)
 		print("I got hit by a "+punched_by.get_name()+" for "+str(damage)+" hits!")
 		set_linear_velocity(vector)
 		get_node('/root/World').hud.get_node('HeartBox').take_hit(damage)
@@ -307,6 +311,7 @@ func _integrate_forces(state):
 			# Only bodies that can be punched, will be punched
 			if punchee.has_method('get_punched'):	# punchable mob
 				punchee.get_punched(self,puncher.get_cast_to(), PUNCH_DAMAGE)
+				striking = false
 			elif 'lock_type' in punchee:	# locked door
 				punchee.unlock()
 			# Rebound from punching the wall
@@ -324,6 +329,16 @@ func _pop_to_floor(y):
 	var pos = get_pos()
 	pos.y = y - 8.0001
 	set_pos(pos)
+
+func _shoot_powerball():
+	var pb = powerball.instance()
+	get_owner().add_child(pb)
+	pb.owner = self
+	var pos = get_pos()
+	pos += Vector2(4*facing, 0)
+	pb.set_pos(pos)
+	
+	pb.Shoot(Vector2(facing,0))
 
 # The Detector detects any Area-based objects that come in contact
 # with the player. This includes ladders, warp doors, and powerups.
