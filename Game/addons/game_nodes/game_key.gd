@@ -7,7 +7,7 @@ var path = 'res://graphics/items/'
 var sprite = Sprite.new()
 var shape = CollisionShape2D.new()
 
-export var key_type = 0 setget _set_key_type
+export(int,0,3) var key_type = 0 setget _set_key_type
 
 func _set_key_type( value ):
 	var type = clamp(value, 0, 3)
@@ -31,6 +31,5 @@ func _enter_tree():
 	
 func pickup():
 	get_node('/root/GameState').add_key(key_type)
-	#print(GameState.Keys)
 	queue_free()
 

@@ -7,7 +7,7 @@ var path = 'res://graphics/items/'
 var sprite = Sprite.new()
 var shape = CollisionPolygon2D.new()
 
-export var lock_type = 0 setget _set_lock_type
+export(int, 0, 3) var lock_type = 0 setget _set_lock_type
 
 func _set_lock_type( value ):
 	value = clamp(value,0,3)

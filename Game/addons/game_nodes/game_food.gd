@@ -4,7 +4,7 @@ tool
 
 var path = 'res://graphics/food/'
 
-export var food = "apple0" setget _set_food
+export(String, "apple0", "burger0", "orange0", "pear0", "red_soda") var food = "apple0" setget _set_food
 export var points = 50
 
 var sprite = Sprite.new()

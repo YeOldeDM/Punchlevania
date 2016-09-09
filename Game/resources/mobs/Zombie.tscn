@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=1]
+[gd_scene load_steps=8 format=1]
 
 [ext_resource path="res://resources/mobs/Zombie.gd" type="Script" id=1]
 [ext_resource path="res://graphics/chars/zombie1.png" type="Texture" id=2]
@@ -16,7 +16,45 @@ length = 8.0
 
 [sub_resource type="Animation" id=3]
 
-resource/name = "run"
+resource/name = "die"
+length = 1.0
+loop = false
+step = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:offset")
+tracks/0/interp = 1
+tracks/0/imported = false
+tracks/0/keys = { "times":FloatArray( 0, 1 ), "transitions":FloatArray( 1, 1 ), "update":0, "values":[ Vector2( 0, 0 ), Vector2( 0, 0 ) ] }
+tracks/1/type = "value"
+tracks/1/path = NodePath("Sprite:frame")
+tracks/1/interp = 1
+tracks/1/imported = false
+tracks/1/keys = { "times":FloatArray( 0, 0.2, 0.5 ), "transitions":FloatArray( 1, 1, 1 ), "update":1, "values":[ 1, 3, 5 ] }
+tracks/2/type = "method"
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/imported = false
+tracks/2/keys = { "times":FloatArray( 1 ), "transitions":FloatArray( 1 ), "values":[ { "args":[  ], "method":"_die" } ] }
+
+[sub_resource type="Animation" id=4]
+
+resource/name = "pain"
+length = 0.25
+loop = false
+step = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/imported = false
+tracks/0/keys = { "times":FloatArray( 0, 0.25 ), "transitions":FloatArray( 1, 1 ), "update":1, "values":[ 3, 3 ] }
+tracks/1/type = "method"
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/imported = false
+tracks/1/keys = { "times":FloatArray( 0.25 ), "transitions":FloatArray( 1 ), "values":[ { "args":[  ], "method":"_end_pain" } ] }
+
+[sub_resource type="Animation" id=5]
+
 length = 1.0
 loop = true
 step = 0.1
@@ -42,14 +80,14 @@ shapes/1/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
 shapes/1/trigger = false
 collision/layers = 1
 collision/mask = 1
-mode = 0
+mode = 2
 mass = 1.0
 friction = 1.0
 bounce = 0.0
 gravity_scale = 1.0
-custom_integrator = false
+custom_integrator = true
 continuous_cd = 0
-contacts_reported = 0
+contacts_reported = 4
 contact_monitor = false
 sleeping = false
 can_sleep = true
@@ -59,18 +97,18 @@ damp_override/linear = -1.0
 damp_override/angular = -1.0
 script/script = ExtResource( 1 )
 STOP_JUMP_FORCE = 190
-MAX_RUN_VELOCITY = 100
-RUN_ACCEL = 400
+MAX_RUN_VELOCITY = 20
+RUN_ACCEL = 50
 AIR_ACCEL = 110
 JUMP_VELOCITY = 140
 PUNCH_HOP = 50
 PUNCH_DAMAGE = 1
+initial_facing = 0
 
 [node name="Sprite" type="Sprite" parent="."]
 
 texture = ExtResource( 2 )
 hframes = 6
-frame = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
@@ -90,10 +128,22 @@ _update_shape_index = 1
 playback/process_mode = 1
 playback/default_blend_time = 0.0
 root/root = NodePath("..")
-anims/run = SubResource( 3 )
+anims/die = SubResource( 3 )
+anims/pain = SubResource( 4 )
+anims/run = SubResource( 5 )
 playback/active = true
 playback/speed = 1.0
 blend_times = [  ]
 autoplay = ""
+
+[node name="VisibilityEnabler2D" type="VisibilityEnabler2D" parent="."]
+
+rect = Rect2( -64, -64, 128, 128 )
+enabler/pause_animations = true
+enabler/freeze_bodies = true
+enabler/pause_particles = true
+enabler/pause_animated_sprites = true
+enabler/process_parent = false
+enabler/fixed_process_parent = false
 
 

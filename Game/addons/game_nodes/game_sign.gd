@@ -5,7 +5,7 @@ tool
 var path = 'res://graphics/items/'
 
 export var Sign = 0 setget _set_sign_texture
-export var Message = ""
+export(String, MULTILINE) var Message = ""
 
 var sprite = Sprite.new()
 var shape = CollisionShape2D.new()

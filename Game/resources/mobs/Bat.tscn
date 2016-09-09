@@ -3,7 +3,7 @@
 [ext_resource path="res://resources/mobs/Bat.gd" type="Script" id=1]
 [ext_resource path="res://graphics/chars/bat1.png" type="Texture" id=2]
 
-[sub_resource type="CircleShape2D" id=6]
+[sub_resource type="CircleShape2D" id=1]
 
 custom_solver_bias = 0.0
 radius = 4.12311
@@ -85,7 +85,7 @@ tracks/1/interp = 1
 tracks/1/imported = false
 tracks/1/keys = { "times":FloatArray( 0, 0.9 ), "transitions":FloatArray( 1, 1 ), "values":[ { "args":[  ], "method":"start_pain" }, { "args":[  ], "method":"end_pain" } ] }
 
-[sub_resource type="CircleShape2D" id=8]
+[sub_resource type="CircleShape2D" id=6]
 
 custom_solver_bias = 0.0
 radius = 5.0
@@ -93,7 +93,7 @@ radius = 5.0
 [node name="Bat" type="RigidBody2D"]
 
 input/pickable = false
-shapes/0/shape = SubResource( 6 )
+shapes/0/shape = SubResource( 1 )
 shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
 shapes/0/trigger = false
 collision/layers = 1
@@ -140,7 +140,7 @@ autoplay = ""
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 
-shape = SubResource( 6 )
+shape = SubResource( 1 )
 trigger = false
 _update_shape_index = 0
 
@@ -157,7 +157,7 @@ enabler/fixed_process_parent = false
 [node name="Area2D" type="Area2D" parent="."]
 
 input/pickable = true
-shapes/0/shape = SubResource( 8 )
+shapes/0/shape = SubResource( 6 )
 shapes/0/transform = Matrix32( 1, 0, 0, 1, 0, 0 )
 shapes/0/trigger = false
 gravity_vec = Vector2( 0, 1 )
@@ -167,7 +167,7 @@ angular_damp = 1.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 
-shape = SubResource( 8 )
+shape = SubResource( 6 )
 trigger = false
 _update_shape_index = 0
 

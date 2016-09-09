@@ -68,6 +68,7 @@ func _integrate_forces(state):
 	
 	# find walls
 	if not dead:
+		
 		var found_wall = false
 		for x in range(state.get_contact_count()):
 			var norm = state.get_contact_local_normal(x)

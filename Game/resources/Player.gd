@@ -13,7 +13,7 @@ export var RUN_ACCEL = 400
 export var AIR_ACCEL = 110
 
 export var JUMP_VELOCITY = 140
-export var PUNCH_HOP = 50
+export var PUNCH_HOP = 20
 export var PUNCH_DAMAGE = 1
 
 onready var sprite = get_node('Sprite')
@@ -21,6 +21,7 @@ onready var animator = get_node('Animator')
 onready var puncher = get_node('Puncher')
 
 var on_floor = false
+var on_ledge = false
 var on_ladder = false
 var in_liquid = false
 var in_lava = false
@@ -37,6 +38,7 @@ var can_punch = true
 
 var can_use = true
 var use_object = null
+var current_ledge = null
 
 var pending_warp = null
 
@@ -65,8 +67,8 @@ func punch():
 	var V = Vector2(hop*facing, -hop/2)
 	set_linear_velocity(V)
 	striking = true
-	if get_node('/root/World').hearts.is_full():
-		_shoot_powerball()
+#	if get_node('/root/World').hearts.is_full():
+#		_shoot_powerball()
 	
 func end_punch():
 	punching = false
@@ -148,6 +150,14 @@ func _integrate_forces(state):
 			if get_pos().y + 8 > floor_y:
 				_pop_to_floor(floor_y)
 			floor_index = x
+			# Ledge Detection
+			var L = state.get_contact_collider_object(x)
+			var N = L.get_name()
+			if N.begins_with("Ledge"):
+				if not on_ledge:	
+					on_ledge = true
+					current_ledge = L
+			else:	if on_ledge:	on_ledge = false
 	
 	# Calculate Airtime
 	if found_floor:	air_time = 0.0
@@ -167,12 +177,16 @@ func _integrate_forces(state):
 			if not punching and PUNCH and can_punch:
 				new_anim = 'punch'
 		
+		if not on_ledge and current_ledge:
+			PS2D.body_remove_collision_exception(get_rid(), current_ledge.get_rid())
+			current_ledge = null
 		# On-Floor mechanics
 		if on_floor and not punching:
 			
 			# USE an object with UP
 			if use_object != null and can_use:
-				if UP and not DOWN:
+				if UP and not DOWN and not LEFT and not RIGHT:
+					# Exclude speechFrame triggers that are already speaking
 					if not use_object.has_node('SpeechFrame'):
 						use_object.use()
 						can_use = false
@@ -195,11 +209,14 @@ func _integrate_forces(state):
 		
 			# Apply Jump input
 			if not jumping and JUMP and can_jump:
-				#print(get_global_pos())
-				lv.y -= jump_pow
-				jumping = true
-				stopping_jump = false
-				can_jump = false
+				if DOWN and current_ledge:
+					PS2D.body_add_collision_exception(get_rid(), current_ledge.get_rid())
+				else:
+					#print(get_global_pos())
+					lv.y -= jump_pow
+					jumping = true
+					stopping_jump = false
+					can_jump = false
 				
 			if lv.x < 0 and LEFT:
 				new_facing = -1
@@ -317,6 +334,9 @@ func _integrate_forces(state):
 			# Rebound from punching the wall
 			var V = -puncher.get_cast_to().normalized()
 			set_linear_velocity(V*50)
+		elif get_node('/root/World').hearts.is_full():
+			_shoot_powerball()
+			striking = false
 	
 	if not in_pain:
 		if in_lava and not dead:
@@ -373,6 +393,7 @@ func _on_Detector_area_exit( area ):
 		if on_ladder:	on_ladder = false
 		# Ensure flip reset after climbing animation is changed
 		sprite.set_flip_h(false)
+
 
 	if area.get_name().begins_with('Slime'):
 		if in_liquid:	in_liquid = false
